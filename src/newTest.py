@@ -1,6 +1,28 @@
 import numpy as np
-from pymoo.core.problem import ElementwiseProblem
 
+def readTable(direc):
+    with open(direc, 'r') as f:
+        M = int(f.readline()[:-1])
+        N = int(f.readline()[:-1])
+        res = np.zeros((M,N))
+        for y in range(M):
+            temp = f.readline()
+            lista = temp.split(' ')
+            for x in range(N):
+                res[y, x] = int(lista[x])
+        return M, N, res
+
+def readTableFuck(direc):
+    with open(direc, 'r') as f:
+        M = int(f.readline()[:-1])
+        N = int(f.readline()[:-1])
+        res = np.zeros(M*N)
+        for y in range(M):
+            temp = f.readline()
+            lista = temp.split(' ')
+            for x in range(N):
+                res[y*N + x] = int(lista[x])
+        return res
 
 def printTable(M, N, A):
     print('Tabla de poblacion')
@@ -10,10 +32,8 @@ def printTable(M, N, A):
             print(f'{A[y,x]:.0f} ', end='')
         print('')
 
-
-class Towers(ElementwiseProblem):
-
-    def __init__(self, matrPobLoc, rangoLoc, precioLoc):
+class Towers():
+    def __init__(self, matrPobLoc, rangoLoc, precioLoc, vec):
         self.M = len(matrPobLoc) #altura
         self.N = len(matrPobLoc[0]) #ancho
         self.matriz = matrPobLoc
@@ -21,22 +41,7 @@ class Towers(ElementwiseProblem):
         self.precio = precioLoc
         #self.costoNorm = self.M * self.N * self.precio #normalizar
         #self.pobTot = self.matriz.sum()
-
-        super().__init__(n_var=self.N*self.M,
-                         n_obj=2,
-                         n_constr=0,
-                         xl=0, 
-                         xu=1, 
-                         type_var=bool)
-
-    def __costo(self, vec):
-        tot = 0
-        for i in range(0,self.M*self.N):
-            if vec[i] == 1:
-                tot += self.precio
-        #tot = tot / self.costoNorm #normalizar
-        return tot
-
+        self.__poblacionTot(vec)
 
     def __assign(self, x, y):
         if 0 <= x < self.N and 0 <= y < self.M:
@@ -49,14 +54,15 @@ class Towers(ElementwiseProblem):
             for x in range(0, self.N):
                 if vec[y*self.N + x] == 1:
                     self.__poblacionParcial(x, y)
+        
+        printTable(self.M, self.N, self.matrConteo)
 
         for y in range(0,self.M):
             for x in range(0, self.N):
-                pob += self.matriz[y, x]*int(self.matrConteo[y,x])
+                pob += self.matriz[y, x]*self.matrConteo[y,x]
 
         #pob = (self.pobTot - pob) / self.pobTot
-        #print(f'Antenas: {vec.sum()} y Poblacion: {pob}')    
-        return pob
+        print(pob)
 
     def __poblacionParcial(self, x, y):
         for i in range(self.rango + 1):
@@ -68,8 +74,7 @@ class Towers(ElementwiseProblem):
                     self.__assign(x - i, y - j)
                 else:
                     break
-                    
 
-    def _evaluate(self, x, out, *args, **kwargs):
-        out["F"] = [self.__costo(x), - self.__poblacionTot(x)]
-
+M, N, A = readTable('instances/instance_20x20.txt')
+Vec = readTableFuck('instances/kek.txt')
+Towers(A, 5, 100, Vec)

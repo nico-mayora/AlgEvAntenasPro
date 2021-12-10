@@ -4,12 +4,13 @@ from pymoo.factory import get_sampling, get_crossover, get_mutation
 from pymoo.factory import get_termination
 from pymoo.optimize import minimize
 import numpy as np
-from src.problem import Towers
+from problem import Towers
 import matplotlib.pyplot as plt
 
-def readTable():
-    
-    with open('../instances/instance_20x20.txt', 'r') as f:
+
+
+def readTable(direccion):
+    with open(direccion, 'r') as f:
         M = int(f.readline()[:-1])
         N = int(f.readline()[:-1])
         res = np.zeros((M,N))
@@ -18,31 +19,30 @@ def readTable():
             lista = temp.split(' ')
             for x in range(N):
                 res[y, x] = int(lista[x])
-        return M, N, res
-                
+        return M, N, res            
 
-termination = get_termination("n_gen", 1000)
+gens = int(input('Ingrese el numero de generaciones: '))
+termination = get_termination("n_gen", gens)
 
-M, N, A = readTable()
-costo = 100
-rango = 1
-problem = Towers(A, 5, costo)
+direc = 'instances/' + input('Ingrese el nombre del archivo de instancia: ')
+M, N, A = readTable(direc)
+
+costo = int(input('Ingrese el costo para cada torre: '))
+rango = int(input('Ingrese el rango de cada torre: '))
+problem = Towers(A, rango, costo)
+pop = int(input('Ingrese el tamaño de poblacion por generacion: '))
+init = np.vstack( ( np.zeros((pop//2, N*M)), np.ones((pop//2, N*M)) ) )
 
 algorithm = NSGA2(
-    pop_size=40,
+    pop_size=pop,
     n_offsprings=10,
-    sampling=np.random.randint(2, size=(40, N*M)),
+    sampling= init,
+    #np.zeros((40, N*M))
+    #np.random.randint(2, size=(40, N*M))
     crossover=get_crossover("bin_ux"),
     mutation=get_mutation("bin_bitflip"),
     eliminate_duplicates=True
 )
-
-print('Tabla de poblacion')
-print(f'Poblacion Total: {A.sum():.0f}')
-for y in range(0,M):
-    for x in range(0, N):
-        print(f'{A[y,x]:.0f} ', end='')
-    print('')
 
 res = minimize(problem,
                algorithm,
@@ -55,10 +55,11 @@ F = res.F
 
 pobTot = A.sum()
 costoNorm = M*N*costo
-with open('../out/Solutions.txt', 'w') as f:
+with open('out/Solutions.txt', 'w') as f:
     iter = 0
     for arr in X.astype(int):
-        f.write(f'Poblacion: {(pobTot - (F[iter][1]*pobTot)):.0f}, Costo: {F[iter][0]*costoNorm:.0f}\n')
+        #f.write(f'Poblacion: {(pobTot - (F[iter][1]*pobTot)):.0f}, Costo: {F[iter][0]*costoNorm:.0f}\n')
+        f.write(f'Poblacion: {F[iter][1]:.0f}, Costo: {F[iter][0]:.0f}\n')
         for y in range(0,M):
             for x in range(0, N):
                 f.write(f'{arr[y*N + x]:d} ')
@@ -72,5 +73,3 @@ plt.figure(figsize=(7, 5))
 plt.scatter(F[:, 0], F[:, 1], s=30, facecolors='none', edgecolors='blue')
 plt.title("Objective Space")
 plt.show()
-
-#print(res.time)
