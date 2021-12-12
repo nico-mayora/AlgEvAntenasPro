@@ -69,6 +69,7 @@ def removePoblacion(x, y, M, N, A, rango):
             else:
                 break
 
+GRAFICA_PARETO = True
 direc = 'instances/' + input('Ingrese el nombre del archivo de instancia: ')
 M, N, A = readTable(direc)
 nTorres = int(input('Ingrese el numero torres que desea calcular: '))
@@ -76,18 +77,24 @@ costo = int(input('Ingrese el costo de las torres: '))
 rango = int(input('Ingrese el rango de las torres: '))
 res = np.zeros((M, N))
 pobCubierta = 0
+finish = 0
+with open('out/ParetoGreddy.txt', 'w') as f:
+    for i in range(nTorres):
+        print(f'Colocando torre {i + 1}')
+        x, y, pobC = mejorTorre(M, N, A, rango)
+        if pobC == 0:
+            finish = i + 1
+            break
+        removePoblacion(x, y, M, N, A, rango)
+        res[y, x] = 1
+        pobCubierta += pobC
+        if GRAFICA_PARETO:
+            f.write(f'{(i+1)*costo}/{-pobCubierta:.0f}\n')
 
-for i in range(nTorres):
-    print(f'Colocando torre {i + 1}')
-    x, y, pobC = mejorTorre(M, N, A, rango)
-    removePoblacion(x, y, M, N, A, rango)
-    res[y, x] = 1
-    pobCubierta += pobC
-
-print(f'Poblacion Cubierta: {pobCubierta}')
+    print(f'Poblacion Cubierta: {pobCubierta}')
 
 with open('out/SolutionsGreddy.txt', 'w') as f:
-    f.write(f'Poblacion: {pobCubierta:.0f}, Costo: {costo*nTorres:.0f}\n')
+    f.write(f'Poblacion: {pobCubierta:.0f}, Costo: {costo*finish:.0f}\n')
     for y in range(0,M):
         for x in range(0, N):
             f.write(f'{res[y, x]:.0f} ')
