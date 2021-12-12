@@ -7,8 +7,6 @@ import numpy as np
 from problem import Towers
 import matplotlib.pyplot as plt
 
-
-
 def readTable(direccion):
     with open(direccion, 'r') as f:
         M = int(f.readline()[:-1])
@@ -22,23 +20,20 @@ def readTable(direccion):
         return M, N, res            
 
 gens = int(input('Ingrese el numero de generaciones: '))
-termination = get_termination("n_gen", gens)
-
 direc = 'instances/' + input('Ingrese el nombre del archivo de instancia: ')
-M, N, A = readTable(direc)
-
 costo = int(input('Ingrese el costo para cada torre: '))
 rango = int(input('Ingrese el rango de cada torre: '))
-problem = Towers(A, rango, costo)
 pop = int(input('Ingrese el tamaño de poblacion por generacion: '))
+
+termination = get_termination("n_gen", gens)
+M, N, A = readTable(direc)
+problem = Towers(A, rango, costo)
 init = np.vstack( ( np.zeros((pop//2, N*M)), np.ones((pop//2, N*M)) ) )
 
 algorithm = NSGA2(
     pop_size=pop,
     n_offsprings=10,
     sampling= init,
-    #np.zeros((40, N*M))
-    #np.random.randint(2, size=(40, N*M))
     crossover=get_crossover("bin_ux"),
     mutation=get_mutation("bin_bitflip"),
     eliminate_duplicates=True
@@ -58,7 +53,6 @@ costoNorm = M*N*costo
 with open('out/Solutions.txt', 'w') as f:
     iter = 0
     for arr in X.astype(int):
-        #f.write(f'Poblacion: {(pobTot - (F[iter][1]*pobTot)):.0f}, Costo: {F[iter][0]*costoNorm:.0f}\n')
         f.write(f'Poblacion: {F[iter][1]:.0f}, Costo: {F[iter][0]:.0f}\n')
         for y in range(0,M):
             for x in range(0, N):
@@ -70,6 +64,6 @@ with open('out/Solutions.txt', 'w') as f:
 
 xl, xu = problem.bounds()
 plt.figure(figsize=(7, 5))
-plt.scatter(F[:, 0], F[:, 1], s=30, facecolors='none', edgecolors='blue')
-plt.title("Objective Space")
+plt.scatter(F[:, 0], F[:, 1], s=20, facecolors='none', edgecolors='blue')
+plt.title("Soluciones no Dominadas")
 plt.show()

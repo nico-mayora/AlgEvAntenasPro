@@ -19,8 +19,7 @@ class Towers(ElementwiseProblem):
         self.matriz = matrPobLoc
         self.rango = rangoLoc
         self.precio = precioLoc
-        #self.costoNorm = self.M * self.N * self.precio #normalizar
-        #self.pobTot = self.matriz.sum()
+
 
         super().__init__(n_var=self.N*self.M,
                          n_obj=2,
@@ -34,7 +33,7 @@ class Towers(ElementwiseProblem):
         for i in range(0,self.M*self.N):
             if vec[i] == 1:
                 tot += self.precio
-        #tot = tot / self.costoNorm #normalizar
+
         return tot
 
 
@@ -53,9 +52,7 @@ class Towers(ElementwiseProblem):
         for y in range(0,self.M):
             for x in range(0, self.N):
                 pob += self.matriz[y, x]*int(self.matrConteo[y,x])
-
-        #pob = (self.pobTot - pob) / self.pobTot
-        #print(f'Antenas: {vec.sum()} y Poblacion: {pob}')    
+  
         return pob
 
     def __poblacionParcial(self, x, y):
